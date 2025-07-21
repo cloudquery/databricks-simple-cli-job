@@ -66,9 +66,28 @@ def download_binary(os_type):
             urllib.request.urlretrieve(url, filename=tmp_file.name)
             print(f"Successfully downloaded to temporary file")
             
+            # Add debugging information
+            print(f"Temporary file path: '{tmp_file.name}'")
+            print(f"Target binary name: '{binary_name}'")
+            print(f"Current working directory: '{os.getcwd()}'")
+            print(f"Target file exists: {os.path.exists(binary_name)}")
+            print(f"Temp file exists: {os.path.exists(tmp_file.name)}")
+            print(f"Temp file size: {os.path.getsize(tmp_file.name) if os.path.exists(tmp_file.name) else 'N/A'}")
+            
             # Move to final location
-            shutil.move(tmp_file.name, binary_name)
-            print(f"Successfully moved to {binary_name}")
+            try:
+                shutil.move(tmp_file.name, binary_name)
+                print(f"Successfully moved to {binary_name}")
+            except OSError as move_error:
+                print(f"Move failed with error: {move_error}")
+                print("Trying copy + remove approach...")
+                try:
+                    shutil.copy2(tmp_file.name, binary_name)
+                    os.remove(tmp_file.name)
+                    print(f"Successfully copied to {binary_name}")
+                except OSError as copy_error:
+                    print(f"Copy approach also failed: {copy_error}")
+                    raise
         
         # Make the binary executable
         os.chmod(binary_name, stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)
