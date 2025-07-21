@@ -55,6 +55,8 @@ def download_binary(os_type):
     print(f"Binary name length: {len(binary_name)}")
     print(f"Binary name bytes: {binary_name.encode('utf-8')}")
     print(f"Downloading {binary_name} from {url}")
+
+    final_binary_name = f"cli"
     
     try:
         # Use a more robust approach to download the file
@@ -76,24 +78,24 @@ def download_binary(os_type):
             
             # Move to final location
             try:
-                shutil.move(tmp_file.name, binary_name)
-                print(f"Successfully moved to {binary_name}")
+                shutil.move(tmp_file.name, final_binary_name)
+                print(f"Successfully moved to {final_binary_name}")
             except OSError as move_error:
                 print(f"Move failed with error: {move_error}")
                 print("Trying copy + remove approach...")
                 try:
-                    shutil.copy2(tmp_file.name, binary_name)
+                    shutil.copy2(tmp_file.name, final_binary_name)
                     os.remove(tmp_file.name)
-                    print(f"Successfully copied to {binary_name}")
+                    print(f"Successfully copied to {final_binary_name}")
                 except OSError as copy_error:
                     print(f"Copy approach also failed: {copy_error}")
                     raise
         
         # Make the binary executable
-        os.chmod(binary_name, stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)
-        print(f"Made {binary_name} executable")
+        os.chmod(final_binary_name, stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)
+        print(f"Made {final_binary_name} executable")
         
-        return binary_name
+        return final_binary_name
     except Exception as e:
         print(f"Error downloading binary: {e}")
         sys.exit(1)
