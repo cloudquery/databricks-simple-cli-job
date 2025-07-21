@@ -17,6 +17,9 @@ def detect_os():
     system = platform.system().lower()
     machine = platform.machine().lower()
     
+    print(f"System: '{system}'")
+    print(f"Machine: '{machine}'")
+    
     if system == "darwin":
         if machine in ["arm64", "aarch64"]:
             return "darwin_arm64"
@@ -34,14 +37,38 @@ def detect_os():
 def download_binary(os_type):
     """Download the cloudquery binary for the specified OS."""
     base_url = "https://github.com/cloudquery/cloudquery/releases/download/cli-v6.24.0"
-    binary_name = f"cloudquery_{os_type}"
+    # Ensure binary_name is a simple string without any environment variable substitution
+    # Use a hardcoded approach to avoid any potential issues
+    if os_type == "linux_amd64":
+        binary_name = "cloudquery_linux_amd64"
+    elif os_type == "darwin_amd64":
+        binary_name = "cloudquery_darwin_amd64"
+    elif os_type == "darwin_arm64":
+        binary_name = "cloudquery_darwin_arm64"
+    else:
+        binary_name = f"cloudquery_{os_type}"
+    
     url = f"{base_url}/{binary_name}"
     
+    print(f"OS type: '{os_type}'")
+    print(f"Binary name: '{binary_name}'")
+    print(f"Binary name length: {len(binary_name)}")
+    print(f"Binary name bytes: {binary_name.encode('utf-8')}")
     print(f"Downloading {binary_name} from {url}")
     
     try:
-        urllib.request.urlretrieve(url, binary_name)
-        print(f"Successfully downloaded {binary_name}")
+        # Use a more robust approach to download the file
+        import tempfile
+        import shutil
+        
+        # Download to a temporary file first
+        with tempfile.NamedTemporaryFile(delete=False, suffix='_cloudquery') as tmp_file:
+            urllib.request.urlretrieve(url, tmp_file.name)
+            print(f"Successfully downloaded to temporary file")
+            
+            # Move to final location
+            shutil.move(tmp_file.name, binary_name)
+            print(f"Successfully moved to {binary_name}")
         
         # Make the binary executable
         os.chmod(binary_name, stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)
