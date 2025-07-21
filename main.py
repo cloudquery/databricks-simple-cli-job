@@ -10,9 +10,7 @@ import subprocess
 import urllib.request
 import stat
 import argparse
-from pathlib import Path
-from dotenv import load_dotenv
-
+from pyspark.dbutils import DBUtils
 
 def detect_os():
     """Detect the operating system and architecture."""
@@ -57,12 +55,20 @@ def download_binary(os_type):
 
 def load_environment():
     """Load environment variables from .env file if it exists."""
-    env_file = Path(".env")
-    if env_file.exists():
-        print("Loading environment variables from .env file")
-        load_dotenv()
-    else:
-        print("No .env file found, using existing environment variables")
+    dbutils = DBUtils(spark)
+
+    os.environ["AWS_ACCESS_KEY_ID"] = dbutils.secrets.get(scope="mariano", key="AWS_ACCESS_KEY_ID")
+    os.environ["AWS_SECRET_ACCESS_KEY"] = dbutils.secrets.get(scope="mariano", key="AWS_SECRET_ACCESS_KEY")
+    os.environ["AWS_SESSION_TOKEN"] = dbutils.secrets.get(scope="mariano", key="AWS_SESSION_TOKEN")
+
+    os.environ["CLOUDQUERY_API_KEY"] = dbutils.secrets.get(scope="mariano", key="CLOUDQUERY_API_KEY")
+
+    os.environ["DATABRICKS_CATALOG"] = dbutils.secrets.get(scope="mariano", key="DATABRICKS_CATALOG")
+    os.environ["DATABRICKS_SCHEMA"] = dbutils.secrets.get(scope="mariano", key="DATABRICKS_SCHEMA")
+    os.environ["DATABRICKS_STAGING_PATH"] = dbutils.secrets.get(scope="mariano", key="DATABRICKS_STAGING_PATH")
+    os.environ["DATABRICKS_HTTP_PATH"] = dbutils.secrets.get(scope="mariano", key="DATABRICKS_HTTP_PATH")
+    os.environ["DATABRICKS_HOSTNAME"] = dbutils.secrets.get(scope="mariano", key="DATABRICKS_HOSTNAME")
+    os.environ["DATABRICKS_ACCESS_TOKEN"] = dbutils.secrets.get(scope="mariano", key="DATABRICKS_ACCESS_TOKEN")
 
 
 def expand_env_vars_in_yaml(yaml_file):
