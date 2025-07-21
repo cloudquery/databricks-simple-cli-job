@@ -63,7 +63,7 @@ def download_binary(os_type):
         
         # Download to a temporary file first
         with tempfile.NamedTemporaryFile(delete=False, suffix='_cloudquery') as tmp_file:
-            urllib.request.urlretrieve(url, tmp_file.name)
+            urllib.request.urlretrieve(url, filename=tmp_file.name)
             print(f"Successfully downloaded to temporary file")
             
             # Move to final location
