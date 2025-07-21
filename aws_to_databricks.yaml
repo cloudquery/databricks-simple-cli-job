@@ -1,0 +1,56 @@
+kind: source
+spec:
+  # Source spec section
+  name: aws
+  path: cloudquery/aws
+  registry: cloudquery
+  version: "v32.32.0"
+  tables: ["aws_ec2_instances", "aws_s3_buckets"]
+  destinations: ["databricks"]
+  # Learn more about the configuration options at https://cql.ink/aws_source
+  spec:
+    # Optional parameters
+    # regions: []
+    # accounts: []
+    # org: nil
+    # concurrency: 50000
+    # initialization_concurrency: 4
+    # aws_debug: false
+    # max_retries: 10
+    # max_backoff: 30
+    # custom_endpoint_url: ""
+    # custom_endpoint_hostname_immutable: nil # required when custom_endpoint_url is set
+    # custom_endpoint_partition_id: "" # required when custom_endpoint_url is set
+    # custom_endpoint_signing_region: "" # required when custom_endpoint_url is set
+    # use_paid_apis: false
+    # table_options: nil
+    # scheduler: shuffle # options are: dfs, round-robin, shuffle, or shuffle-queue
+    # use_nested_table_rate_limiting: false 
+    # enable_api_level_tracing: false 
+---
+kind: destination
+spec:
+  name: "databricks"
+  path: "cloudquery/databricks"
+  registry: "cloudquery"
+  version: "v1.3.26"
+  write_mode: "append"
+  spec:
+    hostname: ${DATABRICKS_HOSTNAME} # optionally it can include protocol like https://abc.cloud.databricks.com
+    http_path: ${DATABRICKS_HTTP_PATH} # HTTP path for SQL compute
+    staging_path: ${DATABRICKS_STAGING_PATH} # Databricks FileStore or Unity volume path to store temporary files for staging
+    catalog: ${DATABRICKS_CATALOG}
+    schema: ${DATABRICKS_SCHEMA}
+    auth:
+      access_token: ${DATABRICKS_ACCESS_TOKEN}
+    # Optional parameters
+    # protocol: https
+    # port: 443
+    # catalog: ""
+    # schema: "default"
+    # migration_concurrency: 10
+    # timeout: 1m
+    # batch:
+    #   size: 10000
+    #   bytes: 5242880 # 5 MiB
+    #   timeout: 20s

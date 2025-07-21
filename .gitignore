@@ -1,0 +1,7 @@
+.cq
+.env
+cloudquery.log
+cloudquery_darwin_arm64
+cloudquery_darwin_amd64
+cloudquery_linux_amd64
+cloudquery_linux_arm64
