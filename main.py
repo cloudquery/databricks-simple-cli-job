@@ -5,101 +5,8 @@ Script to download cloudquery binary, set up environment, and run sync command.
 
 import os
 import sys
-import platform
 import subprocess
-import urllib.request
-import stat
-import argparse
 from pyspark.dbutils import DBUtils
-
-def detect_os():
-    """Detect the operating system and architecture."""
-    system = platform.system().lower()
-    machine = platform.machine().lower()
-    
-    print(f"System: '{system}'")
-    print(f"Machine: '{machine}'")
-    
-    if system == "darwin":
-        if machine in ["arm64", "aarch64"]:
-            return "darwin_arm64"
-        else:
-            return "darwin_amd64"
-    elif system == "linux":
-        if machine in ["x86_64", "amd64"]:
-            return "linux_amd64"
-        else:
-            return "linux_amd64"  # Default to amd64 for linux
-    else:
-        raise ValueError(f"Unsupported operating system: {system}")
-
-
-def download_binary(os_type):
-    """Download the cloudquery binary for the specified OS."""
-    base_url = "https://github.com/cloudquery/cloudquery/releases/download/cli-v6.24.0"
-    # Ensure binary_name is a simple string without any environment variable substitution
-    # Use a hardcoded approach to avoid any potential issues
-    if os_type == "linux_amd64":
-        binary_name = "cloudquery_linux_amd64"
-    elif os_type == "darwin_amd64":
-        binary_name = "cloudquery_darwin_amd64"
-    elif os_type == "darwin_arm64":
-        binary_name = "cloudquery_darwin_arm64"
-    else:
-        binary_name = f"cloudquery_{os_type}"
-    
-    url = f"{base_url}/{binary_name}"
-    
-    print(f"OS type: '{os_type}'")
-    print(f"Binary name: '{binary_name}'")
-    print(f"Binary name length: {len(binary_name)}")
-    print(f"Binary name bytes: {binary_name.encode('utf-8')}")
-    print(f"Downloading {binary_name} from {url}")
-
-    final_binary_name = f"cli"
-    
-    try:
-        # Use a more robust approach to download the file
-        import tempfile
-        import shutil
-        
-        # Download to a temporary file first
-        with tempfile.NamedTemporaryFile(delete=False, suffix='_cloudquery') as tmp_file:
-            urllib.request.urlretrieve(url, filename=tmp_file.name)
-            print(f"Successfully downloaded to temporary file")
-            
-            # Add debugging information
-            print(f"Temporary file path: '{tmp_file.name}'")
-            print(f"Target binary name: '{binary_name}'")
-            print(f"Current working directory: '{os.getcwd()}'")
-            print(f"Target file exists: {os.path.exists(binary_name)}")
-            print(f"Temp file exists: {os.path.exists(tmp_file.name)}")
-            print(f"Temp file size: {os.path.getsize(tmp_file.name) if os.path.exists(tmp_file.name) else 'N/A'}")
-            
-            # Move to final location
-            try:
-                shutil.move(tmp_file.name, final_binary_name)
-                print(f"Successfully moved to {final_binary_name}")
-            except OSError as move_error:
-                print(f"Move failed with error: {move_error}")
-                print("Trying copy + remove approach...")
-                try:
-                    shutil.copy2(tmp_file.name, final_binary_name)
-                    os.remove(tmp_file.name)
-                    print(f"Successfully copied to {final_binary_name}")
-                except OSError as copy_error:
-                    print(f"Copy approach also failed: {copy_error}")
-                    raise
-        
-        # Make the binary executable
-        os.chmod(final_binary_name, stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)
-        print(f"Made {final_binary_name} executable")
-        
-        return final_binary_name
-    except Exception as e:
-        print(f"Error downloading binary: {e}")
-        sys.exit(1)
-
 
 def load_environment():
     """Load environment variables from .env file if it exists."""
@@ -140,9 +47,9 @@ def expand_env_vars_in_yaml(yaml_file):
     return temp_yaml
 
 
-def run_cloudquery_sync(binary_path, yaml_file):
+def run_cloudquery_sync(yaml_file):
     """Run the cloudquery sync command."""
-    cmd = [f"./{binary_path}", "sync", yaml_file]
+    cmd = [f"python", "-m", "cloudquery", "sync", yaml_file]
     print(f"Running command: {' '.join(cmd)}")
     
     try:
@@ -153,47 +60,20 @@ def run_cloudquery_sync(binary_path, yaml_file):
         print(f"Error running cloudquery sync: {e}")
         sys.exit(1)
 
-
-def cleanup_temp_file(temp_file):
-    """Clean up temporary files."""
-    try:
-        os.remove(temp_file)
-        print(f"Cleaned up temporary file: {temp_file}")
-    except OSError as e:
-        print(f"Warning: Could not remove temporary file {temp_file}: {e}")
-
-
 def main():
     """Main function to orchestrate the entire process."""
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Run cloudquery sync with specified YAML file')
     parser.add_argument('yaml_file', help='Path to the YAML configuration file')
     args = parser.parse_args()
-    
-    print("Starting cloudquery setup and execution...")
-    
-    # Step 1: Load environment variables
+
     load_environment()
     
-    # Step 2: Detect OS and download appropriate binary
-    os_type = detect_os()
-    print(f"Detected OS type: {os_type}")
-    
-    binary_name = download_binary(os_type)
-    
-    # Step 3: Expand environment variables in YAML file
     yaml_file = args.yaml_file
     expanded_yaml = expand_env_vars_in_yaml(yaml_file)
     
-    try:
-        # Step 4: Run cloudquery sync
-        run_cloudquery_sync(binary_name, expanded_yaml)
-    finally:
-        # Step 5: Cleanup
-        cleanup_temp_file(expanded_yaml)
-    
+    run_cloudquery_sync(expanded_yaml)
     print("Script completed successfully!")
-
 
 if __name__ == "__main__":
     main()
