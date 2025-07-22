@@ -61,9 +61,10 @@ def main():
     load_environment(args.scope)
     
     yaml_file = args.spec
-    expanded_yaml = expand_env_vars_in_yaml(yaml_file)
+    # expanded_yaml = expand_env_vars_in_yaml(yaml_file)
     
-    run_cloudquery_sync(expanded_yaml)
+    # run_cloudquery_sync(expanded_yaml)
+    run_cloudquery_sync("aws_to_databricks.yaml")
     print("Script completed successfully!")
 
 if __name__ == "__main__":
