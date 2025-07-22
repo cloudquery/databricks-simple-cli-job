@@ -37,10 +37,10 @@ def main():
     """Main function to orchestrate the entire process."""
     parser = argparse.ArgumentParser(description='Run cloudquery sync with specified YAML file')
     parser.add_argument('--spec', required=True, help='Path to the YAML configuration file')
-    parser.add_argument('--scope', required=True, help='Scope to load Databricks secrets from')
+    parser.add_argument('--secrets-scope', required=True, help='Scope to load Databricks secrets from')
     args = parser.parse_args()
 
-    load_environment(args.scope)
+    load_environment(args.secrets_scope)
     expand_env_vars_in_yaml(args.spec)
     
     os.chdir('/tmp')
