@@ -29,17 +29,17 @@ def expand_env_vars_in_yaml(yaml_file):
     expanded_content = os.path.expandvars(content)
     
     # Write the expanded content back to a temporary file
-    temp_yaml = f"{yaml_file}.expanded"
+    temp_yaml = f"/tmp/spec.expanded"
     with open(temp_yaml, 'w') as f:
         f.write(expanded_content)
     
-    print(f"Expanded environment variables in {yaml_file} -> {temp_yaml}")
+    print(f"Expanded environment variables")
     return temp_yaml
 
 
-def run_cloudquery_sync(yaml_file):
+def run_cloudquery_sync():
     """Run the cloudquery sync command."""
-    cmd = [f"python", "-m", "cloudquery", "sync", yaml_file]
+    cmd = [f"python", "-m", "cloudquery", "sync", "/tmp/spec.expanded"]
     print(f"Running command: {' '.join(cmd)}")
     
     try:
@@ -61,10 +61,11 @@ def main():
     load_environment(args.scope)
     
     yaml_file = args.spec
-    # expanded_yaml = expand_env_vars_in_yaml(yaml_file)
+    expand_env_vars_in_yaml(yaml_file)
     
-    # run_cloudquery_sync(expanded_yaml)
-    run_cloudquery_sync("aws_to_databricks.yaml")
+    os.chdir('/tmp')
+
+    run_cloudquery_sync()
     print("Script completed successfully!")
 
 if __name__ == "__main__":
