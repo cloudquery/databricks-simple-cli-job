@@ -26,7 +26,7 @@ def main():
     
     os.chdir('/tmp')
 
-    subprocess.run(["python", "-m", "cloudquery", "sync", "/tmp/spec.expanded"], check=True, capture_output=False)
+    subprocess.run(["python", "-m", "cloudquery", "sync", args.spec], check=True, capture_output=False)
 
 if __name__ == "__main__":
     main()
